@@ -12,8 +12,8 @@ import kotlin.time.TimeSource
 class EntityModel(
     val color: Color,
     val radius: Float,
-    private var position: Float2 = Float2(radius, radius),
-    private var velocity: Float2 = Float2(0f, 0f),
+    private var position: Float2 = Float2(x = radius, y = radius),
+    private var velocity: Float2 = Float2(x = 0f, y = 0f),
 ) : ViewModel() {
 
     companion object {
@@ -31,7 +31,7 @@ class EntityModel(
 
 
     fun draw(scope: DrawScope) {
-        val delta = lastMark?.let { TimeSource.Monotonic.markNow().minus(it) } ?: Duration.Companion.ZERO
+        val delta = lastMark?.let { TimeSource.Monotonic.markNow().minus(it) } ?: Duration.ZERO
 
         with(scope) {
             if (position.x + radius > size.width) {
@@ -67,7 +67,7 @@ private fun ClosedRange<Int>.nextFloat(): Float =
     Random.nextFloat() * (endInclusive - start) + start
 
 private fun getRandomOpaqueColor() = Color(
-    red = Random.nextInt(256), // 0-255
-    green = Random.nextInt(256), // 0-255
-    blue = Random.nextInt(256)  // 0-255
+    red = Random.nextInt(256),
+    green = Random.nextInt(256),
+    blue = Random.nextInt(256),
 )
