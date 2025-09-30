@@ -6,11 +6,15 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import dev.romainguy.kotlin.math.Float2
 import kotlin.random.Random
 
+private const val bounce = 0.9f
+
 class EntityModel(
     val color: Color,
     val radius: Float,
+    private val mass: Float = 1f,
     private var position: Float2 = Float2(x = radius, y = radius),
     private var velocity: Float2 = Float2(x = 0f, y = 0f),
+    private var acceleration: Float2 = Float2(x = 0f, y = 1f),
 ) : BaseEntityViewModel() {
 
     companion object {
@@ -22,6 +26,10 @@ class EntityModel(
                 y = (1..20).nextFloat()
             )
         )
+    }
+
+    fun applyForce(force: Float2) {
+        acceleration += force/mass
     }
 
     override fun onDraw(scope: DrawScope, delta: Float) = with(scope) {
@@ -36,13 +44,17 @@ class EntityModel(
         if (position.y + radius > size.height) {
             position = position.copy(y = size.height - radius)
             velocity *= Float2(1f, -1f)
+            velocity.y *= bounce // make collisions with ground inelastic
         }
-        if (position.y - radius < 0) {
-            position = position.copy(y = radius)
-            velocity *= Float2(1f, -1f)
-        }
+//        if (position.y - radius < 0) {
+//            position = position.copy(y = radius)
+//            velocity *= Float2(1f, -1f)
+//        }
 
+        velocity += acceleration
         position += velocity.times(delta)
+
+        acceleration = Float2()
 
         drawCircle(
             color = color,

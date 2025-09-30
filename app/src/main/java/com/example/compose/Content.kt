@@ -2,6 +2,8 @@ package com.example.compose
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -10,14 +12,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.compose.ui.theme.ComposeTheme
+import dev.romainguy.kotlin.math.Float2
 import kotlinx.coroutines.delay
+import timber.log.Timber
 
 const val FRAME_TIME_MS = 10L
 
@@ -48,13 +55,36 @@ fun Content(
         text = "Elapsed time: ${counter * FRAME_TIME_MS}ms",
         modifier = modifier.padding(8.dp)
     )
+
+    var touchPosition by remember { mutableStateOf<Offset?>(null) }
+
     Column(modifier) {
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
                 .border(width = 1.dp, color = Color.Green)
+                .pointerInput(Unit) {
+                    detectDragGestures(
+                        onDragStart = { offset ->
+                            Timber.tag("patrick").d("onDragStart: $offset")
+                            touchPosition = offset
+                        },
+                        onDragEnd = {
+                            Timber.tag("patrick").d("onDragEnd")
+                            touchPosition = null
+                        }
+                    ) { change, dragAmount ->
+                        change.consume()
+                        val position = touchPosition ?: return@detectDragGestures
+                        touchPosition = position + dragAmount
+                        Timber.tag("patrick").d("onDrag: $touchPosition")
+                    }
+                }
         ) {
-            list.forEach { it.draw(this) }
+            list.forEach {
+                it.applyForce(Float2(0f, 10f))
+                it.draw(this)
+            }
         }
     }
 }
