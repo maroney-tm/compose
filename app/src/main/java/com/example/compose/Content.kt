@@ -34,18 +34,18 @@ fun Content(
     modifier: Modifier = Modifier
 ) {
     var counter by remember { mutableIntStateOf(0) }
-    val list = remember { mutableListOf<EntityModel>() }
+    val entityList = remember { mutableListOf<EntityModel>() }
 
     LaunchedEffect(Unit) {
-        list.add(EntityModel.rand())
-        list.add(EntityModel.rand())
-        list.add(EntityModel.rand())
-        list.add(EntityModel.rand())
-        list.add(EntityModel.rand())
-        list.add(EntityModel.rand())
-        list.add(EntityModel.rand())
-        list.add(EntityModel.rand())
-        list.add(EntityModel.rand())
+        entityList.add(EntityModel.rand())
+        entityList.add(EntityModel.rand())
+        entityList.add(EntityModel.rand())
+        entityList.add(EntityModel.rand())
+        entityList.add(EntityModel.rand())
+        entityList.add(EntityModel.rand())
+        entityList.add(EntityModel.rand())
+        entityList.add(EntityModel.rand())
+        entityList.add(EntityModel.rand())
 
         while (true) {
             delay(FRAME_TIME_MS)
@@ -83,8 +83,11 @@ fun Content(
                     }
                 }
         ) {
-            list.forEach {
-                it.applyForce(Float2(0f, 10f))
+            entityList.forEach {
+                touchPosition?.let { tp ->
+                    val f = it.attract(Float2(tp.x, tp.y))
+                    it.applyForce(f)
+                }
                 it.draw(this)
             }
         }
