@@ -4,9 +4,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import dev.romainguy.kotlin.math.Float2
+import kotlin.math.pow
+import kotlin.math.sqrt
 import kotlin.random.Random
 
-private const val bounce = 0.9f
+private const val BOUNCE = 0.9f
+private const val FRICTION = 0.99f
 
 class EntityModel(
     val color: Color,
@@ -29,7 +32,12 @@ class EntityModel(
     }
 
     fun applyForce(force: Float2) {
-        acceleration += force/mass
+        acceleration += force / mass
+    }
+
+    fun attract(position: Float2): Float2 {
+        val force = position - this.position
+        return force.normalize()
     }
 
     override fun onDraw(scope: DrawScope, delta: Float) = with(scope) {
@@ -44,17 +52,18 @@ class EntityModel(
         if (position.y + radius > size.height) {
             position = position.copy(y = size.height - radius)
             velocity *= Float2(1f, -1f)
-            velocity.y *= bounce // make collisions with ground inelastic
+            velocity.y *= BOUNCE // make collisions with ground inelastic
         }
-//        if (position.y - radius < 0) {
-//            position = position.copy(y = radius)
-//            velocity *= Float2(1f, -1f)
-//        }
+        if (position.y - radius < 0) {
+            position = position.copy(y = radius)
+            velocity *= Float2(1f, -1f)
+        }
 
         velocity += acceleration
         position += velocity.times(delta)
 
         acceleration = Float2()
+        velocity = velocity.times(FRICTION)
 
         drawCircle(
             color = color,
@@ -72,3 +81,8 @@ private fun getRandomOpaqueColor() = Color(
     green = Random.nextInt(256),
     blue = Random.nextInt(256),
 )
+
+fun Float2.normalize(): Float2 {
+    val magnitude = sqrt(x.pow(2) + y.pow(2))
+    return Float2(x = x / magnitude, y = y / magnitude)
+}
