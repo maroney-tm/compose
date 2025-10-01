@@ -2,8 +2,10 @@ package com.example.compose
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitDragOrCancellation
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitTouchSlopOrCancellation
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -24,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import com.example.compose.ui.theme.ComposeTheme
 import dev.romainguy.kotlin.math.Float2
 import kotlinx.coroutines.delay
-import timber.log.Timber
 
 const val FRAME_TIME_MS = 10L
 
@@ -64,20 +65,21 @@ fun Content(
                 .fillMaxSize()
                 .border(width = 1.dp, color = Color.Green)
                 .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragStart = { offset ->
-                            Timber.tag("patrick").d("onDragStart: $offset")
-                            touchPosition = offset
-                        },
-                        onDragEnd = {
-                            Timber.tag("patrick").d("onDragEnd")
-                            touchPosition = null
+                    awaitEachGesture {
+                        val down = awaitFirstDown()
+                        touchPosition = down.position
+                        var change = awaitTouchSlopOrCancellation(down.id) { change, _ ->
+                            change.consume()
+                            touchPosition = change.position
                         }
-                    ) { change, dragAmount ->
-                        change.consume()
-                        val position = touchPosition ?: return@detectDragGestures
-                        touchPosition = position + dragAmount
-                        Timber.tag("patrick").d("onDrag: $touchPosition")
+                        while (change != null && change.pressed) {
+                            change = awaitDragOrCancellation(change.id)
+                            if (change != null && change.pressed) {
+                                change.consume()
+                                touchPosition = change.position
+                            }
+                        }
+                        touchPosition = null
                     }
                 }
         ) {
