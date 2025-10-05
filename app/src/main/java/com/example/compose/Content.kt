@@ -24,7 +24,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.compose.ui.theme.ComposeTheme
-import dev.romainguy.kotlin.math.Float2
+import com.example.compose.util.toFloat2
 import kotlinx.coroutines.delay
 
 const val FRAME_TIME_MS = 10L
@@ -83,12 +83,10 @@ fun Content(
                     }
                 }
         ) {
-            entityList.forEach {
-                touchPosition?.let { tp ->
-                    val f = it.attract(Float2(tp.x, tp.y))
-                    it.applyForce(f)
-                }
-                it.draw(this)
+            entityList.forEach { entity ->
+                touchPosition?.let { entity.attractTo(it.toFloat2()) }
+
+                entity.draw(this)
             }
         }
     }

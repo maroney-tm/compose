@@ -3,9 +3,8 @@ package com.example.compose
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import com.example.compose.util.pointTo
 import dev.romainguy.kotlin.math.Float2
-import kotlin.math.pow
-import kotlin.math.sqrt
 import kotlin.random.Random
 
 private const val BOUNCE = 0.9f
@@ -35,9 +34,9 @@ class EntityModel(
         acceleration += force / mass
     }
 
-    fun attract(position: Float2): Float2 {
-        val force = position - this.position
-        return force.normalize()
+    fun attractTo(position: Float2) {
+        val dir = this.position.pointTo(position)
+        applyForce(dir.times(1f))
     }
 
     override fun onDraw(scope: DrawScope, delta: Float) = with(scope) {
@@ -81,8 +80,3 @@ private fun getRandomOpaqueColor() = Color(
     green = Random.nextInt(256),
     blue = Random.nextInt(256),
 )
-
-fun Float2.normalize(): Float2 {
-    val magnitude = sqrt(x.pow(2) + y.pow(2))
-    return Float2(x = x / magnitude, y = y / magnitude)
-}
