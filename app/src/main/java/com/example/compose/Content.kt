@@ -63,7 +63,6 @@ fun Content(
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
-                .border(width = 1.dp, color = Color.Green)
                 .pointerInput(Unit) {
                     awaitEachGesture {
                         val down = awaitFirstDown()
