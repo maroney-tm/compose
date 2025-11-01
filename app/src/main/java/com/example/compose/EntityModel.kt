@@ -16,27 +16,31 @@ class EntityModel(
     private val mass: Float = 1f,
     private var position: Float2 = Float2(x = radius, y = radius),
     private var velocity: Float2 = Float2(x = 0f, y = 0f),
-    private var acceleration: Float2 = Float2(x = 0f, y = 1f),
+    private var acceleration: Float2 = Float2(x = 0f, y = 0f),
 ) : BaseEntityViewModel() {
 
     companion object {
-        fun rand() = EntityModel(
-            color = getRandomOpaqueColor(),
-            radius = (5..100).nextFloat(),
-            velocity = Float2(
-                x = (1..20).nextFloat(),
-                y = (1..20).nextFloat()
+        fun rand(): EntityModel {
+            val radius = (5..100).nextFloat()
+            return EntityModel(
+                color = getRandomOpaqueColor(),
+                radius = radius,
+                mass = radius,
+                velocity = Float2(
+                    x = (1..20).nextFloat(),
+                    y = (1..20).nextFloat()
+                )
             )
-        )
+        }
     }
 
     fun applyForce(force: Float2) {
-        acceleration += force / mass
+        acceleration += (force / mass)
     }
 
     fun attractTo(position: Float2) {
         val dir = this.position.pointTo(position)
-        applyForce(dir.times(1f))
+        applyForce(dir.times(20f))
     }
 
     override fun onDraw(scope: DrawScope, delta: Float) = with(scope) {
