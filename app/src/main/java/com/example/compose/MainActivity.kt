@@ -19,10 +19,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.ui.NavDisplay
 import com.example.compose.ui.theme.ComposeTheme
 import kotlinx.coroutines.launch
+
+data object Balls
+data object Springs
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -33,6 +40,7 @@ class MainActivity : ComponentActivity() {
             ComposeTheme {
                 val drawerState = rememberDrawerState(DrawerValue.Open)
                 val scope = rememberCoroutineScope()
+                val backStack = remember { mutableStateListOf<Any>(Balls) }
 
                 ModalNavigationDrawer(
                     drawerState = drawerState,
@@ -41,16 +49,22 @@ class MainActivity : ComponentActivity() {
                             Column {
                                 NavigationDrawerItem(
                                     label = { Text("Beautiful Balls") },
-                                    selected = true,
+                                    selected = backStack.lastOrNull() == Balls,
                                     onClick = {
                                         scope.launch {
+                                            backStack.add(Balls)
                                             drawerState.close()
                                         }
                                     })
                                 NavigationDrawerItem(
                                     label = { Text("Fantastic Springs") },
-                                    selected = false,
-                                    onClick = { /*TODO*/ })
+                                    selected = backStack.lastOrNull() == Springs,
+                                    onClick = {
+                                        scope.launch {
+                                            backStack.add(Springs)
+                                            drawerState.close()
+                                        }
+                                    })
                                 NavigationDrawerItem(
                                     label = { Text("Attraction") },
                                     selected = false,
@@ -88,12 +102,29 @@ class MainActivity : ComponentActivity() {
                                 }
                             })
                         }) { innerPadding ->
-                        Content(
-                            modifier = Modifier.padding(innerPadding)
-                        )
+                        NavDisplay(
+                            backStack = backStack,
+                            onBack = { backStack.removeLastOrNull() },
+                            modifier = Modifier.padding(innerPadding),
+                        ) { route ->
+                            when (route) {
+                                is Balls -> NavEntry(route) {
+                                    Content()
+                                }
+
+                                is Springs -> NavEntry(route) {
+                                    Text("Springs")
+                                }
+
+                                else -> NavEntry(route) {
+                                    Text("Whoops")
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
 }
+
